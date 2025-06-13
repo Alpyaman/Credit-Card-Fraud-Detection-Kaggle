@@ -48,4 +48,34 @@ We use **LightGBM** with `GridSearchCV` to tune hyperparameters.
 1. **Install dependencies**
    ```bash
    pip install -r requirements.txt
-2. 
+2. **Run preprocessing and model training**
+   ```bash
+   python train_model.py
+This will:
+- Train and tune a LightGBM model using `GridSearchCV`
+- Plot and save ROC and PR curves
+- Save predictions to `submission.cv`
+- Save the trained model as `best_model.pkl`
+
+## Dataset Info
+- *Rows*: 284,807
+- *Features*: 30 (all anonymized except `Time` and `Amount`)
+- *Target*: `Class` (1 = fraud, 0 = non-fraud)
+
+## Future Improvements
+- Optuna for faster hyperparameter optimization
+- SMOTE or undersampling to balance the dataset
+- Model ensembling (e.g., Voting or Stacking classifiers)
+- Threshold tuning for optimal recall
+
+## Credits
+- Dataset from [Kaggle Credit Card Fraud Detection dataset]
+- Built using `pandas`, `scikit-learn`, `lightgbm`, and `matplotlib`
+
+## Author
+**Alp Yaman**
+Intermediate Data Scientist - AI Enthusiast
+
+---
+Ready for the next project when you are 🚀
+
