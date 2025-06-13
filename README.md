@@ -69,7 +69,7 @@ This will:
 - Threshold tuning for optimal recall
 
 ## Credits
-- Dataset from [Kaggle Credit Card Fraud Detection dataset]
+- Dataset from [Kaggle Credit Card Fraud Detection dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud).
 - Built using `pandas`, `scikit-learn`, `lightgbm`, and `matplotlib`
 
 ## Author
