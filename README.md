@@ -73,7 +73,7 @@ This will:
 - Built using `pandas`, `scikit-learn`, `lightgbm`, and `matplotlib`
 
 ## Author
-###**Alp Yaman**
+### **Alp Yaman**
 Intermediate Data Scientist - AI Enthusiast
 
 ---
