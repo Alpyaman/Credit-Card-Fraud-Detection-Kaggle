@@ -14,7 +14,7 @@ We implement a complete machine learning pipeline including:
 ---
 
 ## 📁 Project Structure
-
+```
 cc_fraud_detection/
 │
 ├── preprocess.py # Data cleaning and transformation logic
@@ -24,7 +24,7 @@ cc_fraud_detection/
 ├── eda_for_cc_fraud.ipynb # EDA for data understanding
 ├── requirements.txt # Python dependencies
 └── README.md # Project documentation
-
+```
 
 ---
 
