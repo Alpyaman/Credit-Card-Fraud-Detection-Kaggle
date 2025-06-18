@@ -1,5 +1,7 @@
 # 🛡️ Credit Card Fraud Detection
 
+![Credit Card Fraud EDA Thumbnail](cc_fraud_thumbnail.png)
+
 This project tackles the problem of **fraud detection** using the [Kaggle Credit Card Fraud Detection dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud). The dataset is highly imbalanced, with only 0.17% of transactions being fraudulent.
 
 We implement a complete machine learning pipeline including:
