@@ -1,35 +1,35 @@
 # Core ML libraries
-pandas==2.3.0
-numpy==2.3.0
-scikit-learn==1.7.0
-lightgbm==4.6.0
-joblib==1.5.1
+pandas
+numpy
+scikit-learn
+lightgbm
+joblib
 
 # Data visualization
-matplotlib==3.10.3
-seaborn==0.13.2
-plotly==5.18.0
+matplotlib
+seaborn
+plotly
 
 # API and web framework
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-pydantic==2.5.3
-python-multipart==0.0.6
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
 
 # Monitoring and drift detection
-evidently==0.4.11
-streamlit==1.28.0
+evidently
+streamlit
 
 # Testing
-pytest==7.4.3
-pytest-cov==4.1.0
-httpx==0.26.0
+pytest
+pytest-cov
+httpx
 
 # Development tools
-flake8==7.0.0
-black==24.1.1
-isort==5.13.2
+flake8
+black
+isort
 
 # Logging and utilities
-python-dotenv==1.0.0
-pyyaml==6.0.1
+python-dotenv
+pyyaml
