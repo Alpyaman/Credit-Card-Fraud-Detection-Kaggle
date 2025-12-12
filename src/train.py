@@ -89,10 +89,9 @@ class FraudDetectionTrainer:
         if param_grid is None:
             param_grid = {
                 "n_estimators": [100, 200],
-                "max_depth": [5, 10, -1],
+                "max_depth": [5, -1],
                 "learning_rate": [0.05, 0.1],
-                "subsample": [0.8, 1.0],
-                "colsample_bytree": [0.8, 1.0]
+                "subsample": [0.8, 1.0]
             }
         
         base_model = LGBMClassifier(random_state=self.random_state, verbose=-1)

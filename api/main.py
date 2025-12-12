@@ -5,6 +5,7 @@ Provides REST API endpoints for predictions and health checks.
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+from contextlib import asynccontextmanager
 import joblib
 import pandas as pd
 from pathlib import Path
@@ -12,22 +13,77 @@ import logging
 from typing import List
 from datetime import datetime
 import uvicorn
+import sys
+
+# Fix for loading old preprocessor pickles
+# This allows loading preprocessor saved with 'preprocess' module name
+import src.preprocess as preprocess
+sys.modules['preprocess'] = preprocess
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize FastAPI app
-app = FastAPI(
-    title="Credit Card Fraud Detection API",
-    description="Production-ready ML API for detecting fraudulent credit card transactions",
-    version="1.0.0"
-)
-
 # Global variables for model and preprocessor
 MODEL = None
 PREPROCESSOR = None
 MODEL_METADATA = {}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for loading/unloading resources."""
+    global MODEL, PREPROCESSOR, MODEL_METADATA
+    
+    # Startup: Load model and preprocessor
+    try:
+        model_path = Path("models/fraud_model.pkl")
+        preprocessor_path = Path("models/preprocessor.pkl")
+        
+        logger.info(f"Looking for model at: {model_path.absolute()}")
+        logger.info(f"Looking for preprocessor at: {preprocessor_path.absolute()}")
+        
+        if not model_path.exists():
+            logger.warning("Model file not found, using fallback path")
+            model_path = Path("best_model.pkl")
+        
+        MODEL = joblib.load(model_path)
+        logger.info(f"✅ Model loaded from {model_path}")
+        
+        if preprocessor_path.exists():
+            PREPROCESSOR = joblib.load(preprocessor_path)
+            logger.info(f"✅ Preprocessor loaded from {preprocessor_path}")
+        else:
+            logger.error(f"❌ Preprocessor not found at {preprocessor_path.absolute()}")
+            logger.error("Predictions will fail without preprocessor!")
+        
+        # Load metadata if available
+        metadata_path = Path("models/model_metadata.json")
+        if metadata_path.exists():
+            import json
+            with open(metadata_path, 'r') as f:
+                MODEL_METADATA = json.load(f)
+            logger.info("✅ Model metadata loaded")
+    
+    except Exception as e:
+        logger.error(f"❌ Error loading model: {e}")
+        logger.warning("API will start but predictions will fail until model is loaded")
+        import traceback
+        traceback.print_exc()
+    
+    yield
+    
+    # Shutdown: cleanup if needed
+    logger.info("Shutting down...")
+
+
+# Initialize FastAPI app with lifespan
+app = FastAPI(
+    title="Credit Card Fraud Detection API",
+    description="Production-ready ML API for detecting fraudulent credit card transactions",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 
 class Transaction(BaseModel):
@@ -63,8 +119,8 @@ class Transaction(BaseModel):
     V28: float
     Amount: float = Field(..., description="Transaction amount")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "Time": 0.0,
                 "V1": -1.359807,
@@ -98,6 +154,7 @@ class Transaction(BaseModel):
                 "Amount": 149.62
             }
         }
+    }
 
 
 class BatchTransactions(BaseModel):
@@ -109,6 +166,8 @@ class PredictionResponse(BaseModel):
     """Prediction response model."""
     is_fraud: bool
     fraud_probability: float
+    confidence: float
+    risk_level: str
     transaction_id: str
     timestamp: str
 
@@ -119,41 +178,6 @@ class BatchPredictionResponse(BaseModel):
     total_transactions: int
     fraud_count: int
     timestamp: str
-
-
-@app.on_event("startup")
-async def load_model():
-    """Load model and preprocessor on startup."""
-    global MODEL, PREPROCESSOR, MODEL_METADATA
-    
-    try:
-        model_path = Path("models/fraud_model.pkl")
-        preprocessor_path = Path("models/preprocessor.pkl")
-        
-        if not model_path.exists():
-            logger.warning("Model file not found, using fallback path")
-            model_path = Path("best_model.pkl")
-        
-        MODEL = joblib.load(model_path)
-        logger.info(f"✅ Model loaded from {model_path}")
-        
-        if preprocessor_path.exists():
-            PREPROCESSOR = joblib.load(preprocessor_path)
-            logger.info(f"✅ Preprocessor loaded from {preprocessor_path}")
-        else:
-            logger.warning("Preprocessor not found, will use basic preprocessing")
-        
-        # Load metadata if available
-        metadata_path = Path("models/model_metadata.json")
-        if metadata_path.exists():
-            import json
-            with open(metadata_path) as f:
-                MODEL_METADATA = json.load(f)
-            logger.info("✅ Model metadata loaded")
-        
-    except Exception as e:
-        logger.error(f"Error loading model: {e}")
-        raise
 
 
 @app.get("/")
@@ -214,26 +238,36 @@ async def predict_transaction(transaction: Transaction):
     if MODEL is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
     
+    if PREPROCESSOR is None:
+        raise HTTPException(status_code=503, detail="Preprocessor not loaded - cannot make predictions")
+    
     try:
         # Convert to DataFrame
         df = pd.DataFrame([transaction.dict()])
         
-        # Preprocess if preprocessor available
-        if PREPROCESSOR is not None:
-            df_processed = PREPROCESSOR.transform(df)
-        else:
-            # Basic preprocessing fallback
-            if 'Time' in df.columns:
-                df.drop(columns=['Time'], inplace=True)
-            df_processed = df
+        # Preprocess data
+        df_processed = PREPROCESSOR.transform(df, is_training=False)
         
         # Make prediction
         prediction = MODEL.predict(df_processed)[0]
         probability = MODEL.predict_proba(df_processed)[0, 1]
         
+        # Calculate confidence and risk level
+        confidence = max(probability, 1 - probability)
+        if probability >= 0.8:
+            risk_level = "high"
+        elif probability >= 0.5:
+            risk_level = "medium"
+        elif probability >= 0.2:
+            risk_level = "low"
+        else:
+            risk_level = "very_low"
+        
         return PredictionResponse(
             is_fraud=bool(prediction),
             fraud_probability=float(probability),
+            confidence=float(confidence),
+            risk_level=risk_level,
             transaction_id=f"txn_{datetime.now().timestamp()}",
             timestamp=datetime.now().isoformat()
         )
@@ -257,17 +291,15 @@ async def predict_batch(batch: BatchTransactions):
     if MODEL is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
     
+    if PREPROCESSOR is None:
+        raise HTTPException(status_code=503, detail="Preprocessor not loaded - cannot make predictions")
+    
     try:
         # Convert to DataFrame
         df = pd.DataFrame([t.dict() for t in batch.transactions])
         
-        # Preprocess
-        if PREPROCESSOR is not None:
-            df_processed = PREPROCESSOR.transform(df)
-        else:
-            if 'Time' in df.columns:
-                df.drop(columns=['Time'], inplace=True)
-            df_processed = df
+        # Preprocess data
+        df_processed = PREPROCESSOR.transform(df, is_training=False)
         
         # Make predictions
         predictions = MODEL.predict(df_processed)
@@ -276,10 +308,23 @@ async def predict_batch(batch: BatchTransactions):
         # Create response
         results = []
         for i, (pred, prob) in enumerate(zip(predictions, probabilities)):
+            # Calculate confidence and risk level
+            confidence = max(prob, 1 - prob)
+            if prob >= 0.8:
+                risk_level = "high"
+            elif prob >= 0.5:
+                risk_level = "medium"
+            elif prob >= 0.2:
+                risk_level = "low"
+            else:
+                risk_level = "very_low"
+            
             results.append(
                 PredictionResponse(
                     is_fraud=bool(pred),
                     fraud_probability=float(prob),
+                    confidence=float(confidence),
+                    risk_level=risk_level,
                     transaction_id=f"txn_{i}_{datetime.now().timestamp()}",
                     timestamp=datetime.now().isoformat()
                 )
