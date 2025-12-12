@@ -4,7 +4,6 @@ Handles model training, hyperparameter tuning, and evaluation.
 """
 
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import (
     roc_auc_score, roc_curve, precision_recall_curve,
@@ -20,7 +19,7 @@ import logging
 from pathlib import Path
 import json
 from datetime import datetime
-from src.preprocess import FraudPreprocessor
+from preprocess import FraudPreprocessor
 
 warnings.filterwarnings('ignore')
 logging.basicConfig(level=logging.INFO)
@@ -262,7 +261,7 @@ class FraudDetectionTrainer:
 def main():
     """Main training pipeline."""
     # Configuration
-    DATA_PATH = "C:/Users/alpya/Documents/cc_fraud_detection/data/creditcard.csv"
+    DATA_PATH = "C:/Users/alpyaman/Desktop/Projects/Credit-Card-Fraud-Detection-Kaggle/data/creditcard.csv"
     MODEL_DIR = "models"
     
     # Initialize trainer

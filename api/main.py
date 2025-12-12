@@ -7,10 +7,9 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 import joblib
 import pandas as pd
-import numpy as np
 from pathlib import Path
 import logging
-from typing import List, Dict, Any
+from typing import List
 from datetime import datetime
 import uvicorn
 

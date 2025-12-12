@@ -7,8 +7,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from evidently import ColumnMapping
-from evidently.report import Report
-from evidently.metric_preset import (
+from evidently import Report
+from evidently.metrics import (
     DataDriftPreset,
     TargetDriftPreset,
     ClassificationPreset
@@ -16,10 +16,8 @@ from evidently.metric_preset import (
 from evidently.metrics import (
     DatasetDriftMetric,
     DatasetMissingValuesMetric,
-    ColumnDriftMetric,
 )
 import joblib
-from pathlib import Path
 import plotly.express as px
 from datetime import datetime, timedelta
 import json

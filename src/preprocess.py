@@ -4,11 +4,10 @@ Handles outlier detection, scaling, and feature engineering.
 """
 
 import pandas as pd
-import numpy as np
 from sklearn.preprocessing import StandardScaler
 import joblib
 import logging
-from typing import Tuple, List
+from typing import List
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
