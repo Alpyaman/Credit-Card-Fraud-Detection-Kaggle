@@ -1,0 +1,100 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Data files
+data/*.csv
+data/*.json
+!data/.gitkeep
+
+# Model files (except examples)
+models/*.pkl
+models/*.h5
+models/*.pt
+!models/.gitkeep
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Test coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# Docker
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Cloud credentials
+*.json
+!cloudbuild.json
+credentials/
+.gcloud/
+.aws/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Monitoring
+monitoring/data/
+monitoring/reports/
+
+# Submissions
+submission*.csv
+!submission.csv
