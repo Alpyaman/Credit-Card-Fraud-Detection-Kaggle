@@ -4,6 +4,7 @@
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
 ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-yellow)
 ![Cloud](https://img.shields.io/badge/Cloud-AWS%20%7C%20GCP-orange)
+![Tests](https://img.shields.io/badge/Tests-28%2F28%20Passing-success)
 
 A complete end-to-end MLOps pipeline for credit card fraud detection, featuring containerization, automated CI/CD, model monitoring, and cloud deployment capabilities.
 
@@ -11,37 +12,47 @@ A complete end-to-end MLOps pipeline for credit card fraud detection, featuring 
 
 ## 🎯 Project Overview
 
-This project transforms a traditional ML model into a **production-grade MLOps system** with:
+This project demonstrates a **production-grade MLOps system** with:
 
-- ✅ **Containerized API** with Docker
-- ✅ **REST API** for real-time predictions
+- ✅ **Trained Model** (ROC-AUC: 0.9508)
+- ✅ **FastAPI REST API** for real-time predictions
+- ✅ **Containerization** with Docker
 - ✅ **CI/CD Pipeline** with GitHub Actions
-- ✅ **Model Monitoring** with Evidently AI
-- ✅ **Cloud Deployment** (AWS ECS, GCP Cloud Run)
-- ✅ **Automated Retraining** workflows
-- ✅ **Comprehensive Testing** suite
+- ✅ **Model Monitoring** dashboard (Python 3.11 compatible)
+- ✅ **Cloud Deployment** configs (AWS ECS, GCP Cloud Run)
+- ✅ **Comprehensive Testing** (28/28 tests passing)
+- ✅ **Complete Documentation**
 
 ---
 
 ## 📁 Project Structure
 
 ```
-fraud-detection-mlops/
+Credit-Card-Fraud-Detection-Kaggle/
 │
 ├── api/                          # FastAPI application
+│   ├── __init__.py
 │   └── main.py                   # API endpoints and model serving
 │
 ├── src/                          # Source code
+│   ├── __init__.py
 │   ├── preprocess.py             # Data preprocessing module
-│   └── train.py                  # Model training pipeline
+│   ├── train.py                  # Model training pipeline
+|   ├── download_data.py          # Dataset download script
+|   └── create_monitoring_data.py # Create monitoring data
+
 │
-├── monitoring/                   # Monitoring dashboard
+├── monitoring/                   # Monitoring dashboards
 │   ├── dashboard.py              # Evidently AI dashboard
+│   ├── dashboard_simple.py       # Simplified dashboard (Python 3.11)
 │   └── Dockerfile                # Monitoring container
 │
-├── tests/                        # Test suite
+├── tests/                        # Test suite (28 tests)
+│   ├── __init__.py
 │   ├── test_preprocess.py        # Preprocessing tests
-│   └── test_api.py               # API tests
+│   ├── test_api.py               # API tests
+|   └── test_api_local.py         # API testing script
+
 │
 ├── cloud/                        # Cloud deployment configs
 │   ├── aws-ecs.tf                # AWS ECS Terraform
@@ -51,16 +62,25 @@ fraud-detection-mlops/
 │   └── ci-cd.yml                 # GitHub Actions workflow
 │
 ├── models/                       # Trained models
-│   ├── fraud_model.pkl           # Trained model
+│   ├── fraud_model.pkl           # Trained LightGBM model
 │   ├── preprocessor.pkl          # Fitted preprocessor
-│   └── model_metadata.json       # Model metadata
+│   ├── model_metadata.json       # Model metadata & metrics
+│   └── *.png                     # Visualization plots
 │
 ├── data/                         # Data directory
+│   ├── creditcard.csv            # Main dataset (143MB)
+│   ├── reference_data.csv        # Reference data for monitoring
+│   ├── production_predictions.csv # Sample production data
+│   └── test_sample.csv           # Test samples
 │
 ├── Dockerfile                    # Main application container
 ├── docker-compose.yml            # Multi-container orchestration
 ├── requirements.txt              # Python dependencies
-└── README.md                     # This file
+├── setup.py                      # Package setup
+│
+├── README.md                     # This file
+├── QUICKSTART.md                 # Quick start guide
+└── WHATS_NEXT.md                 # Learning roadmap
 ```
 
 ---
@@ -70,61 +90,170 @@ fraud-detection-mlops/
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Alpyaman/Credit-Card-Fraud-Detection-Kaggle.git
 cd Credit-Card-Fraud-Detection-Kaggle
 ```
 
-### 2. Install Dependencies
+### 2. Setup Environment
 
 ```bash
 # Create virtual environment
-python -m venv venv
+python -m venv .venv
 
 # Activate virtual environment
 # Windows:
-venv\Scripts\activate
+.venv\Scripts\activate
 # Linux/Mac:
-source venv/bin/activate
+source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Install project in development mode
+pip install -e .
 ```
 
-### 3. Train the Model
+### 3. Download Data and Train Model
 
 ```bash
-# Make sure you have the data file in the correct location
+# Download the dataset
+python download_data.py
+
+# Train the model
 python src/train.py
+
+# Create monitoring data
+python create_monitoring_data.py
 ```
 
-### 4. Run the API Locally
+**Output:**
+- `models/fraud_model.pkl` - Trained model (ROC-AUC: 0.9508)
+- `models/preprocessor.pkl` - Data preprocessor
+- `models/model_metadata.json` - Metrics and metadata
+- Visualization plots (ROC curve, PR curve, feature importance)
+
+### 4. Run Tests
 
 ```bash
-# Start the FastAPI server
+# Run all tests
+pytest tests/ -v
+
+# Expected: All 28 tests pass ✅
+```
+
+### 5. Start the API
+
+```bash
+# Start FastAPI server
 uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Visit `http://localhost:8000/docs` for the interactive API documentation.
+**API Endpoints:**
+- http://localhost:8000 - Root
+- http://localhost:8000/docs - Interactive API docs
+- http://localhost:8000/health - Health check
+- http://localhost:8000/predict - Single prediction
+- http://localhost:8000/predict/batch - Batch predictions
+- http://localhost:8000/model/info - Model information
+
+### 6. Test the API
+
+```bash
+# In another terminal, run the test script
+python test_api_local.py
+
+# Expected: All 5 API tests pass ✅
+```
+
+### 7. Run Monitoring Dashboard
+
+```bash
+# Start the monitoring dashboard
+streamlit run monitoring/dashboard_simple.py
+```
+
+Visit: http://localhost:8501
+
+**Dashboard Features:**
+- Overview: Model metrics and data summary
+- Data Drift: Drift detection with statistical tests
+- Model Performance: Performance metrics and trends
+- Predictions: Recent prediction analysis
 
 ---
 
-## 🐳 Docker Deployment
+## 📚 Documentation
 
-### Build and Run with Docker
+- **[QUICKSTART.md](QUICKSTART.md)** - Step-by-step getting started guide
+- **[WHATS_NEXT.md](WHATS_NEXT.md)** - Next steps and learning path
+
+---
+
+## 🛠️ Technology Stack
+
+**Machine Learning:**
+- LightGBM - Gradient boosting framework
+- Scikit-learn - Preprocessing and metrics
+- Pandas, NumPy - Data manipulation
+
+**API & Web:**
+- FastAPI - REST API framework
+- Uvicorn - ASGI server
+- Pydantic - Data validation
+- Streamlit - Monitoring dashboard
+
+**DevOps & MLOps:**
+- Docker - Containerization
+- Docker Compose - Multi-container orchestration
+- GitHub Actions - CI/CD
+- Pytest - Testing framework
+
+**Cloud & Infrastructure:**
+- Terraform - Infrastructure as Code
+- AWS ECS - Container orchestration
+- GCP Cloud Run - Serverless containers
+
+**Monitoring:**
+- Plotly - Interactive visualizations
+- SciPy - Statistical analysis
+- Custom drift detection
+
+---
+
+## 📈 Project Highlights
+
+✅ **End-to-End Pipeline**: Complete flow from data → model → API → deployment  
+✅ **Production Ready**: Tests, monitoring, documentation all in place  
+✅ **Cloud Native**: Containerized and ready for any cloud platform  
+✅ **Automated**: CI/CD handles testing, building, and deployment  
+✅ **Maintainable**: Well-structured, tested, and documented code  
+✅ **Scalable**: Can handle production workloads with proper deployment  
+
+---
+
+## 🎓 Learning Outcomes
+
+This project demonstrates:
+
+- ✅ Machine Learning model development and evaluation
+- ✅ REST API design and implementation
+- ✅ Containerization with Docker
+- ✅ CI/CD pipeline setup with GitHub Actions
+- ✅ Model monitoring and drift detection
+- ✅ Cloud deployment (AWS & GCP)
+- ✅ Infrastructure as Code with Terraform
+- ✅ Comprehensive testing strategies
+- ✅ Production-ready MLOps practices
+
+### Option 1: Docker Compose (Recommended)
 
 ```bash
-# Build the Docker image
-docker build -t fraud-detection-api .
-
-# Run the container
-docker run -p 8000:8000 fraud-detection-api
-```
-
-### Using Docker Compose
-
-```bash
-# Start all services (API + Monitoring)
+# Build and start all services
 docker-compose up -d
+
+# Services:
+# - API: http://localhost:8000
+# - Monitoring: http://localhost:8501
 
 # View logs
 docker-compose logs -f
@@ -133,9 +262,66 @@ docker-compose logs -f
 docker-compose down
 ```
 
-Access:
-- **API**: http://localhost:8000
-- **Monitoring Dashboard**: http://localhost:8501
+### Option 2: Docker Only
+
+```bash
+# Build the image
+docker build -t fraud-detection-api:latest .
+
+# Run the container
+docker run -d \
+  -p 8000:8000 \
+  -v $(pwd)/models:/app/models \
+  --name fraud-detection \
+  fraud-detection-api:latest
+
+# Check logs
+docker logs fraud-detection
+
+# Stop container
+docker stop fraud-detection
+```
+
+---
+
+## 🧪 Testing
+
+### Run All Tests
+
+```bash
+# Run all tests with verbose output
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=src --cov=api --cov-report=html
+
+# Run specific test file
+pytest tests/test_api.py -v
+```
+
+**Test Coverage:**
+- ✅ 14 API tests (endpoints, validation, error handling)
+- ✅ 14 preprocessing tests (transformations, edge cases)
+- ✅ All 28 tests passing
+
+---
+
+## 📊 Model Performance
+
+**Training Results:**
+- **ROC-AUC Score**: 0.9508
+- **Precision**: 0.8537
+- **Recall**: 0.7143
+- **F1-Score**: 0.7778
+
+**Model Details:**
+- Algorithm: LightGBM Classifier
+- Features: 34 (28 original + 5 outlier flags + scaled amount)
+- Best Parameters:
+  - learning_rate: 0.05
+  - max_depth: 5
+  - n_estimators: 100
+  - subsample: 0.8
 
 ---
 
@@ -372,7 +558,35 @@ API_KEY=your-secret-key  # If implementing authentication
 
 ---
 
-## 🎓 Learning Resources
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+## 📝 License
+
+This project is for educational purposes as part of MLOps learning.
+
+---
+
+## 📦 Support
+
+For questions or issues:
+- Check the documentation files (QUICKSTART.md, etc.)
+- Open an issue on GitHub
+- Review [WHATS_NEXT.md](WHATS_NEXT.md) for common scenarios
+
+---
+
+## 🎉 Acknowledgments
+
+- Dataset: [Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) from Kaggle
+- Inspired by production MLOps best practices
+
+---
+
+**Built with ❤️ for learning MLOps**
 
 This project demonstrates:
 
@@ -409,7 +623,6 @@ This project is licensed under the MIT License.
 Intermediate Data Scientist - AI Enthusiast
 
 - GitHub: [@alpyaman](https://github.com/alpyaman)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
 
 ---
 
@@ -424,8 +637,8 @@ Intermediate Data Scientist - AI Enthusiast
 ## 📞 Support
 
 For issues and questions:
-- Create an [Issue](https://github.com/your-username/repo/issues)
-- Email: your.email@example.com
+- Create an [Issue](https://github.com/Alpyaman/Credit-Card-Fraud-Detection-Kaggle/issues)
+- Email: alpyaman3@gmail.com
 
 ---
 

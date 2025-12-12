@@ -3,9 +3,7 @@ Script to download the Credit Card Fraud Detection dataset from Kaggle.
 Requires Kaggle API credentials.
 """
 
-import os
 from pathlib import Path
-import zipfile
 import logging
 
 logging.basicConfig(level=logging.INFO)
